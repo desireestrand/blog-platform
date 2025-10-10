@@ -14,6 +14,19 @@ postForm.addEventListener('submit', (e) => {
     content.value = ''
 })
 
+const emptyMessage = document.createElement('p')
+emptyMessage.textContent = 'Inga inlägg än...'
+emptyMessage.id = 'empty-message'
+postHolder.appendChild(emptyMessage)
+
+function updateEmptyMessage() {
+    if (postHolder.querySelectorAll('article').length === 0) {
+        emptyMessage.style.display = 'block'
+    } else {
+        emptyMessage.style.display = 'none'
+    }
+}
+
 function newPost (authorText, titleText, contentText) {
     // Skapar article till postcontent - en funktion
     const article = document.createElement('article')
@@ -29,7 +42,7 @@ function newPost (authorText, titleText, contentText) {
 
     // Datumformatering - en funktion
     const currentDate = new Date()
-    const datetime = "• " + currentDate.getDate() + "-" + (currentDate.getMonth()+1) + "-" + currentDate.getFullYear() + " @ " + currentDate.getHours() + ":" + currentDate.getMinutes()
+    const datetime = "• " + currentDate.getDate() + "-" + (currentDate.getMonth()+1) + "-" + currentDate.getFullYear() + " @ " + String(currentDate.getHours()).padStart(2, '0') + ":" + String(currentDate.getMinutes()).padStart(2, '0')
     const postDate = document.createElement('time')
     postDate.textContent = datetime
     postAuthor.appendChild(postDate)
@@ -109,6 +122,7 @@ function newPost (authorText, titleText, contentText) {
         const confirmDeletePost = confirm('Är du säker på att du vill ta bort det här inlägget?')
         if (confirmDeletePost) {
             article.remove()
+            updateEmptyMessage()
         }
     })
     article.appendChild(postRemoveButton)
@@ -181,6 +195,7 @@ function newPost (authorText, titleText, contentText) {
     })
 
     postHolder.prepend(article)
+    updateEmptyMessage()
 }
 
 function newComment (commenterText, commentText, commentList, commentTitle) { 
@@ -192,7 +207,7 @@ function newComment (commenterText, commentText, commentList, commentTitle) {
     comment.appendChild(commenter)
 
     const currentDate = new Date()
-    const datetime = "• " + currentDate.getDate() + "-" + (currentDate.getMonth()+1) + "-" + currentDate.getFullYear() + " @ " + currentDate.getHours() + ":" + currentDate.getMinutes()
+    const datetime = "• " + currentDate.getDate() + "-" + (currentDate.getMonth()+1) + "-" + currentDate.getFullYear() + " @ " + String(currentDate.getHours()).padStart(2, '0') + ":" + String(currentDate.getMinutes()).padStart(2, '0')
     const commentDate = document.createElement('time')
     commentDate.textContent = datetime
     commentDate.classList.add('comment-meta')
@@ -222,3 +237,5 @@ function updateCommentCount(commentList, commentTitle) {
     const count = commentList.querySelectorAll('.comment').length
     commentTitle.textContent = `Kommentarer (${count})`
 }
+
+updateEmptyMessage()

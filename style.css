@@ -111,6 +111,12 @@ section {
     cursor: pointer;
 }
 
+#empty-message {
+    margin-top: 1.5rem;
+    font-size: 1.2rem;
+    color: #D1D7E0;
+}
+
 #blog {
     width: 900px;
     margin-top: 1.5rem;
