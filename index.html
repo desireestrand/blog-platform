@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloggplattform</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+    <header>
+        <h1>✧</h1>
+    </header>
+
+    <main>
+        <section id="new-post">
+            <h2>Skapa ett inlägg</h2>
+            <form id="new-post-form">
+                <div class="input-group">
+                    <label for="fauthor">Författare</label>
+                    <input type="text" id="fauthor" name="fauthor" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="ftitle">Titel</label>
+                    <input type="text" id="ftitle" name="ftitle" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="fcontent">Innehåll</label>
+                    <textarea id="fcontent" name="fcontent" required></textarea>
+                </div>
+
+                <input type="submit" value="Publicera" id="post-btn">
+            </form>
+        </section>
+
+        <section id="blog">
+            <h2>Inlägg</h2>
+            <div id="posts">
+
+            <!--             <article>
+                <h3>Titel</h3>
+                <p class="post-meta"> Av Författare - <time datetime="">Datum</time></p>
+                <p>Innehåll</p>
+
+                <button type="button">Ta bort</button>
+                <button type="button">Like</button>
+                <button type="button">Dislike</button>
+
+                <h4>Kommentarer</h4>
+                <form class="comment-form">
+                    <label for="commenter">Namn</label>
+                    <input type="text" id="commenter" class="fcommenter" name="fcommenter">
+
+                    <label for="comment">Kommentar</label>
+                    <textarea id="comment" class="fcomment" name="fcomment"></textarea>
+
+                    <input type="submit" value="Kommentera">
+                </form>
+                <p>Kommentar</p>
+            </article> -->
+            </div>
+        </section>
+        <footer></footer>
+    </main>
+</body>
+</html>
