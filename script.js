@@ -151,10 +151,13 @@ function newPost (authorText, titleText, contentText) {
     commentForm.classList.add('comment-form')
     commentSection.appendChild(commentForm)
 
+    const nameGroup = document.createElement('div')
+    nameGroup.classList.add('input-group')
+
     const labelCommenterName = document.createElement('label')
     labelCommenterName.setAttribute('for', 'commenter')
     labelCommenterName.textContent = 'Namn'
-    commentForm.appendChild(labelCommenterName)
+    nameGroup.appendChild(labelCommenterName)
 
     const inputCommenterName = document.createElement('input')
     inputCommenterName.type = 'text'
@@ -162,19 +165,26 @@ function newPost (authorText, titleText, contentText) {
     inputCommenterName.classList.add('fcommenter')
     inputCommenterName.name = 'fcommenter'
     inputCommenterName.required = true
-    commentForm.appendChild(inputCommenterName)
+    nameGroup.appendChild(inputCommenterName)
+
+    commentForm.appendChild(nameGroup)
+
+    const commentGroup = document.createElement('div')
+    commentGroup.classList.add('input-group')
 
     const labelComment = document.createElement('label')
     labelComment.setAttribute('for', 'comment')
     labelComment.textContent = `Kommentar`
-    commentForm.appendChild(labelComment)
+    commentGroup.appendChild(labelComment)
 
     const commentTextarea = document.createElement('textarea')
     commentTextarea.id = 'comment'
     commentTextarea.className = 'fcomment' // Ändra alla classlist till classname
     commentTextarea.name = 'fcomment'
     commentTextarea.required = true
-    commentForm.appendChild(commentTextarea)
+    commentGroup.appendChild(commentTextarea)
+
+    commentForm.appendChild(commentGroup)
 
     const commentSubmit = document.createElement('input')
     commentSubmit.type = 'submit'

@@ -79,15 +79,12 @@ section {
     color: #D1D7E0;
 }
 
-.input-group {
-  margin-bottom: 1rem;
-}
-
 .input-group:focus-within label {
   color: #812BB2 !important;
 }
 
-#new-post input[type="text"]:focus, #new-post textarea:focus {
+#new-post input[type="text"]:focus, #new-post textarea:focus, .input-group input[type="text"]:focus,
+.input-group textarea:focus {
     outline: none;
     border-color: #812BB2;
 }
@@ -276,6 +273,7 @@ article h3 {
 }
 
 .comment-form label {
+    display: block;
     margin: 1rem 0 0.5rem;
     color: #676085;
     font-family: "Space Mono", monospace;
