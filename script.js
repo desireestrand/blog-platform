@@ -1,4 +1,4 @@
-// Datumformatering 
+// ----- DATUMFORMATERING -----
 function getCurrentDateTime() {
     const currentDate = new Date()
     const day = String(currentDate.getDate()).padStart(2, '0')
@@ -10,6 +10,7 @@ function getCurrentDateTime() {
     return `• ${day}-${month}-${year} @ ${hours}:${minutes}`
 }
 
+// ----- LAGRING -----
 function getPostsFromStorage() {
     try {
         const posts = localStorage.getItem('posts')
@@ -25,12 +26,14 @@ function savePostsToStorage(posts) {
     localStorage.setItem('posts', JSON.stringify(posts))
 }
 
+// ----- DOM-ELEMENT -----
 const author = document.getElementById('fauthor')
 const title = document.getElementById('ftitle')
 const content = document.getElementById('fcontent')
 const postForm = document.getElementById('new-post-form')
 const postHolder = document.getElementById('posts')
 
+// Meddelande om inga inlägg
 const emptyMessage = document.createElement('p')
 emptyMessage.textContent = 'Inga inlägg än...'
 emptyMessage.id = 'empty-message'
@@ -44,6 +47,7 @@ function updateEmptyMessage() {
     }
 }
 
+// ----- SKAPA INLÄGG -----
 postForm.addEventListener('submit', (e) => {
     e.preventDefault()
 
@@ -54,7 +58,9 @@ postForm.addEventListener('submit', (e) => {
     content.value = ''
 })
 
+// Skapar ett nytt inlägg utifrån formuläret
 function newPost(authorText, titleText, contentText) {
+    // Array med inläggsinformation som sparas i localStorage
     const post = {
         id: Date.now().toString(),
         author: authorText,
@@ -74,103 +80,38 @@ function newPost(authorText, titleText, contentText) {
     updateEmptyMessage()
 }
 
+// ----- VISA INLÄGG -----
 function renderPost(postData) {
-    const { id, author, title, content, likes, dislikes, date, comments } = postData
-
-    // Skapar article till postcontent - en funktion
     const article = document.createElement('article')
-    article.dataset.id = id
+    article.dataset.id = postData.id
 
+    // Titel
     const postTitle = document.createElement('h3')
-    postTitle.textContent = title
+    postTitle.textContent = postData.title
     article.appendChild(postTitle)
 
+    // Författare
     const postAuthor = document.createElement('p')
-    postAuthor.textContent = `Av ${author}`
+    postAuthor.textContent = `Av ${postData.author}`
     postAuthor.classList.add('post-meta')
     article.appendChild(postAuthor)
 
+    // Datum
     const postDate = document.createElement('time')
-    postDate.textContent = date
+    postDate.textContent = postData.date
     postAuthor.appendChild(postDate)
 
+    // Innehåll
     const postContent = document.createElement('p')
-    postContent.textContent = content
+    postContent.textContent = postData.content
     postContent.classList.add('post-content')
     article.appendChild(postContent)
 
-    // Reactions - en funktion
-    const reactionSection = document.createElement('div')
-    reactionSection.classList.add('reactions')
-
-    const likeButton = document.createElement('button')
-    likeButton.textContent = '❤️ '
-    let likeCount = likes
-    const likeCounter = document.createElement('span')
-    likeCounter.textContent = `${likeCount}`
-    likeButton.appendChild(likeCounter)
-
-    const dislikeButton = document.createElement('button')
-    dislikeButton.textContent = '👎 '
-    let dislikeCount = dislikes
-    const dislikeCounter = document.createElement('span')
-    dislikeCounter.textContent = `${dislikeCount}`
-    dislikeButton.appendChild(dislikeCounter)
-
-    let liked = false
-    let disliked = false
-
-    likeButton.addEventListener('click', () => {
-        if (!liked) {
-            likeCount++
-            likeCounter.textContent = `${likeCount}`
-            liked = true
-            dislikeButton.disabled = true
-            likeButton.classList.add('selected')
-            dislikeButton.classList.add('disabled')
-        } else {
-            likeCount--
-            likeCounter.textContent = `${likeCount}`
-            liked = false
-            dislikeButton.disabled = false
-            likeButton.classList.remove('selected')
-            dislikeButton.classList.remove('disabled')
-        }
-
-        const posts = getPostsFromStorage()
-        const thisPost = posts.find((post) => post.id === id)
-        thisPost.likes = likeCount
-        savePostsToStorage(posts)
-    })
-
-    dislikeButton.addEventListener('click', () => {
-        if (!disliked) {
-            dislikeCount++
-            dislikeCounter.textContent = `${dislikeCount}`
-            disliked = true
-            likeButton.disabled = true
-            dislikeButton.classList.add('selected')
-            likeButton.classList.add('disabled')
-        } else {
-            dislikeCount--
-            dislikeCounter.textContent = `${dislikeCount}`
-            disliked = false
-            likeButton.disabled = false
-            dislikeButton.classList.remove('selected')
-            likeButton.classList.remove('disabled')
-        }
-
-        const posts = getPostsFromStorage()
-        const thisPost = posts.find((post) => post.id === id)
-        thisPost.dislikes = dislikeCount
-        savePostsToStorage(posts)
-    })
-
-    reactionSection.appendChild(likeButton)
-    reactionSection.appendChild(dislikeButton)
+    // Reaktioner (like/dislike)
+    const reactionSection = renderReactions(postData)
     article.appendChild(reactionSection)
 
-    // Removebutton - en funktion
+    // Ta bort inlägg
     const postRemoveButton = document.createElement('button')
     postRemoveButton.textContent = 'Ta bort inlägg'
     postRemoveButton.classList.add('remove-button')
@@ -178,19 +119,103 @@ function renderPost(postData) {
         const confirmDeletePost = confirm('Är du säker på att du vill ta bort det här inlägget?')
         if (confirmDeletePost) {
             article.remove()
-            const posts = getPostsFromStorage().filter((post) => post.id !== id)
+            const posts = getPostsFromStorage().filter((post) => post.id !== postData.id)
             savePostsToStorage(posts)
             updateEmptyMessage()
         }
     })
     article.appendChild(postRemoveButton)
 
-    // Kommentarer - en funktion
+    // Kommentarer
+    const commentSection = renderCommentSection(postData)
+    article.appendChild(commentSection)
+
+    postHolder.prepend(article)
+}
+
+// ----- REAKTIONER (LIKE/DISLIKE) -----
+function renderReactions(postData) {
+    const reactionSection = document.createElement('div')
+    reactionSection.classList.add('reactions')
+
+    // Like
+    const likeButton = document.createElement('button')
+    likeButton.textContent = '❤️ '
+    let likeCount = postData.likes
+    const likeCounter = document.createElement('span')
+    likeCounter.textContent = likeCount
+    likeButton.appendChild(likeCounter)
+
+    // Dislike
+    const dislikeButton = document.createElement('button')
+    dislikeButton.textContent = '👎 '
+    let dislikeCount = postData.dislikes
+    const dislikeCounter = document.createElement('span')
+    dislikeCounter.textContent = dislikeCount
+    dislikeButton.appendChild(dislikeCounter)
+
+    // Kollar om användaren har gillat inlägget den här sessionen, då kan användaren inte ogilla inlägget - och tvärtom
+    let liked = false
+    let disliked = false
+
+    likeButton.addEventListener('click', () => {
+        if (!liked) {
+            likeCount++
+            likeCounter.textContent = likeCount
+            liked = true
+            dislikeButton.disabled = true
+            likeButton.classList.add('selected')
+            dislikeButton.classList.add('disabled')
+        } else {
+            likeCount--
+            likeCounter.textContent = likeCount
+            liked = false
+            dislikeButton.disabled = false
+            likeButton.classList.remove('selected')
+            dislikeButton.classList.remove('disabled')
+        }
+
+        const posts = getPostsFromStorage()
+        const thisPost = posts.find((post) => post.id === postData.id)
+        thisPost.likes = likeCount
+        savePostsToStorage(posts)
+    })
+
+    dislikeButton.addEventListener('click', () => {
+        if (!disliked) {
+            dislikeCount++
+            dislikeCounter.textContent = dislikeCount
+            disliked = true
+            likeButton.disabled = true
+            dislikeButton.classList.add('selected')
+            likeButton.classList.add('disabled')
+        } else {
+            dislikeCount--
+            dislikeCounter.textContent = dislikeCount
+            disliked = false
+            likeButton.disabled = false
+            dislikeButton.classList.remove('selected')
+            likeButton.classList.remove('disabled')
+        }
+
+        const posts = getPostsFromStorage()
+        const thisPost = posts.find((post) => post.id === postData.id)
+        thisPost.dislikes = dislikeCount
+        savePostsToStorage(posts)
+    })
+
+    reactionSection.appendChild(likeButton)
+    reactionSection.appendChild(dislikeButton)
+    return reactionSection
+}
+
+// ----- KOMMENTARSEKTIONEN -----
+function renderCommentSection(postData) {
     const commentSection = document.createElement('div')
     commentSection.classList.add('comment-section')
 
     const commentTitle = document.createElement('h4')
-    commentTitle.textContent = `Kommentarer (${comments.length})`
+    commentTitle.textContent = `Kommentarer (${postData.comments.length})`
     commentSection.appendChild(commentTitle)
 
     const commentList = document.createElement('div')
@@ -198,8 +223,9 @@ function renderPost(postData) {
     commentSection.appendChild(commentList)
 
     // Visa befintliga kommentarer
-    comments.forEach((comment) => renderComment(comment, commentList, commentTitle, id))
+    postData.comments.forEach((comment) => renderComment(comment, commentList, commentTitle, postData.id))
 
+    // Kommentarformulär
     const commentFormTitle = document.createElement('h4')
     commentFormTitle.textContent = 'Skriv en kommentar'
     commentFormTitle.id = 'comment-form-title'
@@ -236,7 +262,7 @@ function renderPost(postData) {
 
     const commentTextarea = document.createElement('textarea')
     commentTextarea.id = 'comment'
-    commentTextarea.className = 'fcomment' // Ändra alla classlist till classname
+    commentTextarea.classList.add('fcomment')
     commentTextarea.name = 'fcomment'
     commentTextarea.required = true
     commentGroup.appendChild(commentTextarea)
@@ -249,65 +275,74 @@ function renderPost(postData) {
     commentSubmit.id = 'comment-btn'
     commentForm.appendChild(commentSubmit)
 
-    commentSection.appendChild(commentForm)
-
+    // Skapa kommentar
     commentForm.addEventListener('submit', (e) => {
         e.preventDefault()
 
-        const commenter = commentForm.querySelector('.fcommenter').value
-        const comment = commentForm.querySelector('.fcomment').value
-        const newCommentObject = {
+        const commenter = inputCommenterName.value
+        const comment = commentTextarea.value
+
+        const newComment = {
             id: Date.now().toString(),
             commenter: commenter,
             comment: comment,
             date: getCurrentDateTime()
         }
 
-        renderComment(newCommentObject, commentList, commentTitle)
+        renderComment(newComment, commentList, commentTitle, postData.id)
 
         const posts = getPostsFromStorage()
-        const thisPost = posts.find((post) => post.id === id)
-        thisPost.comments.push(newCommentObject)
-        savePostsToStorage(posts)
+        const thisPost = posts.find((post) => post.id === postData.id)
+        if (thisPost) {
+            thisPost.comments.push(newComment)
+            savePostsToStorage(posts)
+        }
 
-        commentForm.querySelector('.fcommenter').value = ''
-        commentForm.querySelector('.fcomment').value = ''
-    })
+        inputCommenterName.value = ''
+        commentTextarea.value = ''
+        updateCommentCount(commentList, commentTitle)
+    }) 
 
-    article.appendChild(commentSection)
-    postHolder.prepend(article)
+    commentSection.appendChild(commentForm)
+    return commentSection
 }
 
+// ----- ENSKILDA KOMMENTARER -----
 function renderComment (c, commentList, commentTitle, postId) { 
     const comment = document.createElement('div')
     comment.classList.add('comment')
 
+    // Författare
     const commenter = document.createElement('h5')
     commenter.textContent = c.commenter
     comment.appendChild(commenter)
 
-    // const currentDate = new Date()
-    // const datetime = "• " + currentDate.getDate() + "-" + (currentDate.getMonth()+1) + "-" + currentDate.getFullYear() + " @ " + String(currentDate.getHours()).padStart(2, '0') + ":" + String(currentDate.getMinutes()).padStart(2, '0')
+    // Datum
     const commentDate = document.createElement('time')
     commentDate.textContent = c.date
     commentDate.classList.add('comment-meta')
     comment.appendChild(commentDate)
 
+    // Ta bort kommentar
     const commentRemoveButton = document.createElement('button')
     commentRemoveButton.textContent = 'Ta bort kommentar'
     commentRemoveButton.addEventListener('click', () => {
         const confirmDeleteComment = confirm('Är du säker på att du vill ta bort den här kommentaren?')
         if (confirmDeleteComment) {
             comment.remove()
+
             const posts = getPostsFromStorage()
             const thisPost = posts.find((post) => post.id === postId)
-            thisPost.comments = thisPost.comments.filter(cm => cm.id !== c.id)
-            savePostsToStorage(posts)
+            if (thisPost) {
+                thisPost.comments = thisPost.comments.filter(cm => cm.id !== c.id)
+                savePostsToStorage(posts)
+            }
             updateCommentCount(commentList, commentTitle)
         }
     })
     comment.appendChild(commentRemoveButton)
 
+    // Innehåll
     const commentContent = document.createElement('p')
     commentContent.textContent = c.comment
     comment.appendChild(commentContent)
@@ -316,11 +351,13 @@ function renderComment (c, commentList, commentTitle, postId) {
     updateCommentCount(commentList, commentTitle)
 }
 
+// Visa antalet kommentarer
 function updateCommentCount(commentList, commentTitle) {
     const count = commentList.querySelectorAll('.comment').length
     commentTitle.textContent = `Kommentarer (${count})`
 }
 
+// Skapa inlägg från localStorage när sidan laddas
 window.addEventListener('DOMContentLoaded', () => {
     const savedPosts = getPostsFromStorage() || []
     savedPosts.forEach((post) => renderPost(post))
