@@ -1,18 +1,35 @@
+// Datumformatering 
+function getCurrentDateTime() {
+    const currentDate = new Date()
+    const day = String(currentDate.getDate()).padStart(2, '0')
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0')
+    const year = currentDate.getFullYear()
+    const hours = String(currentDate.getHours()).padStart(2, '0')
+    const minutes = String(currentDate.getMinutes()).padStart(2, '0')
+
+    return `• ${day}-${month}-${year} @ ${hours}:${minutes}`
+}
+
+function getPostsFromStorage() {
+    try {
+        const posts = localStorage.getItem('posts')
+        const parsed = posts ? JSON.parse(posts) : []
+        return Array.isArray(parsed) ? parsed : []
+    } catch (e) {
+        console.error('Fel i localStorage, rensar:', e)
+        return []
+    }
+}
+
+function savePostsToStorage(posts) {
+    localStorage.setItem('posts', JSON.stringify(posts))
+}
+
 const author = document.getElementById('fauthor')
 const title = document.getElementById('ftitle')
 const content = document.getElementById('fcontent')
 const postForm = document.getElementById('new-post-form')
 const postHolder = document.getElementById('posts')
-
-postForm.addEventListener('submit', (e) => {
-    e.preventDefault()
-
-    newPost(author.value, title.value, content.value)
-
-    author.value = ''
-    title.value = ''
-    content.value = ''
-})
 
 const emptyMessage = document.createElement('p')
 emptyMessage.textContent = 'Inga inlägg än...'
@@ -27,28 +44,58 @@ function updateEmptyMessage() {
     }
 }
 
-function newPost (authorText, titleText, contentText) {
+postForm.addEventListener('submit', (e) => {
+    e.preventDefault()
+
+    newPost(author.value, title.value, content.value)
+
+    author.value = ''
+    title.value = ''
+    content.value = ''
+})
+
+function newPost(authorText, titleText, contentText) {
+    const post = {
+        id: Date.now().toString(),
+        author: authorText,
+        title: titleText,
+        content: contentText,
+        likes: 0,
+        dislikes: 0,
+        date: getCurrentDateTime(),
+        comments: []
+    }
+
+    const posts = getPostsFromStorage()
+    posts.push(post)
+    savePostsToStorage(posts)
+
+    renderPost(post)
+    updateEmptyMessage()
+}
+
+function renderPost(postData) {
+    const { id, author, title, content, likes, dislikes, date, comments } = postData
+
     // Skapar article till postcontent - en funktion
     const article = document.createElement('article')
+    article.dataset.id = id
 
     const postTitle = document.createElement('h3')
-    postTitle.textContent = titleText
+    postTitle.textContent = title
     article.appendChild(postTitle)
 
     const postAuthor = document.createElement('p')
-    postAuthor.textContent = `Av ${authorText}`
+    postAuthor.textContent = `Av ${author}`
     postAuthor.classList.add('post-meta')
     article.appendChild(postAuthor)
 
-    // Datumformatering - en funktion
-    const currentDate = new Date()
-    const datetime = "• " + currentDate.getDate() + "-" + (currentDate.getMonth()+1) + "-" + currentDate.getFullYear() + " @ " + String(currentDate.getHours()).padStart(2, '0') + ":" + String(currentDate.getMinutes()).padStart(2, '0')
     const postDate = document.createElement('time')
-    postDate.textContent = datetime
+    postDate.textContent = date
     postAuthor.appendChild(postDate)
 
     const postContent = document.createElement('p')
-    postContent.textContent = contentText
+    postContent.textContent = content
     postContent.classList.add('post-content')
     article.appendChild(postContent)
 
@@ -58,14 +105,14 @@ function newPost (authorText, titleText, contentText) {
 
     const likeButton = document.createElement('button')
     likeButton.textContent = '❤️ '
-    let likeCount = 0
+    let likeCount = likes
     const likeCounter = document.createElement('span')
     likeCounter.textContent = `${likeCount}`
     likeButton.appendChild(likeCounter)
 
     const dislikeButton = document.createElement('button')
     dislikeButton.textContent = '👎 '
-    let dislikeCount = 0
+    let dislikeCount = dislikes
     const dislikeCounter = document.createElement('span')
     dislikeCounter.textContent = `${dislikeCount}`
     dislikeButton.appendChild(dislikeCounter)
@@ -89,6 +136,11 @@ function newPost (authorText, titleText, contentText) {
             likeButton.classList.remove('selected')
             dislikeButton.classList.remove('disabled')
         }
+
+        const posts = getPostsFromStorage()
+        const thisPost = posts.find((post) => post.id === id)
+        thisPost.likes = likeCount
+        savePostsToStorage(posts)
     })
 
     dislikeButton.addEventListener('click', () => {
@@ -107,11 +159,15 @@ function newPost (authorText, titleText, contentText) {
             dislikeButton.classList.remove('selected')
             likeButton.classList.remove('disabled')
         }
+
+        const posts = getPostsFromStorage()
+        const thisPost = posts.find((post) => post.id === id)
+        thisPost.dislikes = dislikeCount
+        savePostsToStorage(posts)
     })
 
     reactionSection.appendChild(likeButton)
     reactionSection.appendChild(dislikeButton)
-
     article.appendChild(reactionSection)
 
     // Removebutton - en funktion
@@ -122,6 +178,8 @@ function newPost (authorText, titleText, contentText) {
         const confirmDeletePost = confirm('Är du säker på att du vill ta bort det här inlägget?')
         if (confirmDeletePost) {
             article.remove()
+            const posts = getPostsFromStorage().filter((post) => post.id !== id)
+            savePostsToStorage(posts)
             updateEmptyMessage()
         }
     })
@@ -130,17 +188,17 @@ function newPost (authorText, titleText, contentText) {
     // Kommentarer - en funktion
     const commentSection = document.createElement('div')
     commentSection.classList.add('comment-section')
-    article.appendChild(commentSection)
 
     const commentTitle = document.createElement('h4')
-    commentTitle.textContent = 'Kommentarer (0)'
+    commentTitle.textContent = `Kommentarer (${comments.length})`
     commentSection.appendChild(commentTitle)
-
-    let commentCount = 0
 
     const commentList = document.createElement('div')
     commentList.classList.add('comment-list')
     commentSection.appendChild(commentList)
+
+    // Visa befintliga kommentarer
+    comments.forEach((comment) => renderComment(comment, commentList, commentTitle, id))
 
     const commentFormTitle = document.createElement('h4')
     commentFormTitle.textContent = 'Skriv en kommentar'
@@ -149,7 +207,6 @@ function newPost (authorText, titleText, contentText) {
 
     const commentForm = document.createElement('form')
     commentForm.classList.add('comment-form')
-    commentSection.appendChild(commentForm)
 
     const nameGroup = document.createElement('div')
     nameGroup.classList.add('input-group')
@@ -192,34 +249,47 @@ function newPost (authorText, titleText, contentText) {
     commentSubmit.id = 'comment-btn'
     commentForm.appendChild(commentSubmit)
 
+    commentSection.appendChild(commentForm)
+
     commentForm.addEventListener('submit', (e) => {
         e.preventDefault()
 
-        const commenter = commentForm.querySelector('.fcommenter')
-        const comment = commentForm.querySelector('.fcomment')
+        const commenter = commentForm.querySelector('.fcommenter').value
+        const comment = commentForm.querySelector('.fcomment').value
+        const newCommentObject = {
+            id: Date.now().toString(),
+            commenter: commenter,
+            comment: comment,
+            date: getCurrentDateTime()
+        }
 
-        newComment(commenter.value, comment.value, commentList, commentTitle)
+        renderComment(newCommentObject, commentList, commentTitle)
 
-        commenter.value = ''
-        comment.value = ''
+        const posts = getPostsFromStorage()
+        const thisPost = posts.find((post) => post.id === id)
+        thisPost.comments.push(newCommentObject)
+        savePostsToStorage(posts)
+
+        commentForm.querySelector('.fcommenter').value = ''
+        commentForm.querySelector('.fcomment').value = ''
     })
 
+    article.appendChild(commentSection)
     postHolder.prepend(article)
-    updateEmptyMessage()
 }
 
-function newComment (commenterText, commentText, commentList, commentTitle) { 
+function renderComment (c, commentList, commentTitle, postId) { 
     const comment = document.createElement('div')
     comment.classList.add('comment')
 
     const commenter = document.createElement('h5')
-    commenter.textContent = commenterText
+    commenter.textContent = c.commenter
     comment.appendChild(commenter)
 
-    const currentDate = new Date()
-    const datetime = "• " + currentDate.getDate() + "-" + (currentDate.getMonth()+1) + "-" + currentDate.getFullYear() + " @ " + String(currentDate.getHours()).padStart(2, '0') + ":" + String(currentDate.getMinutes()).padStart(2, '0')
+    // const currentDate = new Date()
+    // const datetime = "• " + currentDate.getDate() + "-" + (currentDate.getMonth()+1) + "-" + currentDate.getFullYear() + " @ " + String(currentDate.getHours()).padStart(2, '0') + ":" + String(currentDate.getMinutes()).padStart(2, '0')
     const commentDate = document.createElement('time')
-    commentDate.textContent = datetime
+    commentDate.textContent = c.date
     commentDate.classList.add('comment-meta')
     comment.appendChild(commentDate)
 
@@ -229,17 +299,20 @@ function newComment (commenterText, commentText, commentList, commentTitle) {
         const confirmDeleteComment = confirm('Är du säker på att du vill ta bort den här kommentaren?')
         if (confirmDeleteComment) {
             comment.remove()
+            const posts = getPostsFromStorage()
+            const thisPost = posts.find((post) => post.id === postId)
+            thisPost.comments = thisPost.comments.filter(cm => cm.id !== c.id)
+            savePostsToStorage(posts)
             updateCommentCount(commentList, commentTitle)
         }
     })
     comment.appendChild(commentRemoveButton)
 
     const commentContent = document.createElement('p')
-    commentContent.textContent = commentText
+    commentContent.textContent = c.comment
     comment.appendChild(commentContent)
 
     commentList.prepend(comment)
-
     updateCommentCount(commentList, commentTitle)
 }
 
@@ -248,4 +321,8 @@ function updateCommentCount(commentList, commentTitle) {
     commentTitle.textContent = `Kommentarer (${count})`
 }
 
-updateEmptyMessage()
+window.addEventListener('DOMContentLoaded', () => {
+    const savedPosts = getPostsFromStorage() || []
+    savedPosts.forEach((post) => renderPost(post))
+    updateEmptyMessage()
+})
