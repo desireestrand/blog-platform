@@ -1,69 +1,55 @@
 <!DOCTYPE html>
 <html lang="sv">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bloggplattform</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
     <script src="script.js" defer></script>
-</head>
+  </head>
 
-<body>
+  <body>
+    <!-- Header med webbplatsens titel -->
     <header>
-        <h1>✧</h1>
+      <h1>✧ Bloggplattform ✧</h1>
     </header>
 
     <main>
-        <section id="new-post">
-            <h2>Skapa ett inlägg</h2>
-            <form id="new-post-form">
-                <div class="input-group">
-                    <label for="fauthor">Författare</label>
-                    <input type="text" id="fauthor" name="fauthor" required>
-                </div>
+      <!-- Sektion för att skapa nytt blogginlägg -->
+      <section id="new-post">
+        <h2>Skapa ett inlägg</h2>
+        <form id="new-post-form">
+          <!-- Författarens namn -->
+          <div class="input-group">
+            <label for="fauthor">Författare</label>
+            <input type="text" id="fauthor" name="fauthor" placeholder="Ditt namn (eller smeknamn)" required />
+          </div>
 
-                <div class="input-group">
-                    <label for="ftitle">Titel</label>
-                    <input type="text" id="ftitle" name="ftitle" required>
-                </div>
+          <!-- Inläggstitel -->
+          <div class="input-group">
+            <label for="ftitle">Titel</label>
+            <input type="text" id="ftitle" name="ftitle" placeholder="Vad handlar ditt inlägg om?" required />
+          </div>
 
-                <div class="input-group">
-                    <label for="fcontent">Innehåll</label>
-                    <textarea id="fcontent" name="fcontent" required></textarea>
-                </div>
+          <!-- Inläggsinnehåll -->
+          <div class="input-group">
+            <label for="fcontent">Innehåll (max 500 tecken)</label>
+            <textarea id="fcontent" name="fcontent" placeholder="Vad vill du berätta för världen idag?" maxlength="500" required ></textarea>
+          </div>
 
-                <input type="submit" value="Publicera" id="post-btn">
-            </form>
-        </section>
+          <!-- Submit-knapp -->
+          <input type="submit" value="Publicera" id="post-btn" class="btn-primary"/>
+        </form>
+      </section>
 
-        <section id="blog">
-            <h2>Inlägg</h2>
-            <div id="posts">
+      <!-- Sektion för att visa alla blogginlägg -->
+      <section id="blog">
+        <h2>Inlägg</h2>
+        <div id="posts"></div>
+      </section>
 
-            <!--             <article>
-                <h3>Titel</h3>
-                <p class="post-meta"> Av Författare - <time datetime="">Datum</time></p>
-                <p>Innehåll</p>
-
-                <button type="button">Ta bort</button>
-                <button type="button">Like</button>
-                <button type="button">Dislike</button>
-
-                <h4>Kommentarer</h4>
-                <form class="comment-form">
-                    <label for="commenter">Namn</label>
-                    <input type="text" id="commenter" class="fcommenter" name="fcommenter">
-
-                    <label for="comment">Kommentar</label>
-                    <textarea id="comment" class="fcomment" name="fcomment"></textarea>
-
-                    <input type="submit" value="Kommentera">
-                </form>
-                <p>Kommentar</p>
-            </article> -->
-            </div>
-        </section>
-        <footer></footer>
+      <!-- Footer med credits -->
+      <footer>Made with ❤️ i Frontend 1-kursen. 2025 © Desirée Strand.</footer>
     </main>
-</body>
+  </body>
 </html>
