@@ -15,7 +15,8 @@
     </header>
 
     <main>
-      <!-- Sektion för att skapa nytt blogginlägg -->
+      <!-- Formulär för att skapa nytt blogginlägg -->
+       <!-- Formuläret ligger direkt i HTML eftersom det är en fast del av sidans layout -->
       <section id="new-post">
         <h2>Skapa ett inlägg</h2>
         <form id="new-post-form">
@@ -43,6 +44,7 @@
       </section>
 
       <!-- Sektion för att visa alla blogginlägg -->
+      <!-- All dynamisk funktionalitet (skapa, ta bort och visa inlägg, kommentarer och reaktioner) hanteras i script.js med DOM-manipulation -->
       <section id="blog">
         <h2>Inlägg</h2>
         <div id="posts"></div>
